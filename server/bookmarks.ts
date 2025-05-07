@@ -95,7 +95,8 @@ export function setupBookmarks(app: Express) {
   // GET /api/bookmarks - Get all bookmarks for the current user
   app.get("/api/bookmarks", isAuthenticated, async (req, res) => {
     try {
-      const bookmarks = await storage.getBookmarks(req.user.id);
+      // req.user is guaranteed to exist because of isAuthenticated middleware
+      const bookmarks = await storage.getBookmarks(req.user!.id);
       res.json(bookmarks);
     } catch (error) {
       console.error("Error getting bookmarks:", error);
@@ -114,8 +115,9 @@ export function setupBookmarks(app: Express) {
         fetchSummary(validatedData.url)
       ]);
       
+      // req.user is guaranteed to exist because of isAuthenticated middleware
       const bookmark = await storage.createBookmark({
-        userId: req.user.id,
+        userId: req.user!.id,
         url: validatedData.url,
         title: meta.title,
         favicon: meta.favicon,
@@ -146,7 +148,8 @@ export function setupBookmarks(app: Express) {
       }
       
       // Only allow accessing user's own bookmarks
-      if (bookmark.userId !== req.user.id) {
+      // req.user is guaranteed to exist because of isAuthenticated middleware
+      if (bookmark.userId !== req.user!.id) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
@@ -171,7 +174,8 @@ export function setupBookmarks(app: Express) {
       }
       
       // Only allow deleting user's own bookmarks
-      if (bookmark.userId !== req.user.id) {
+      // req.user is guaranteed to exist because of isAuthenticated middleware
+      if (bookmark.userId !== req.user!.id) {
         return res.status(403).json({ message: "Forbidden" });
       }
       
