@@ -15,17 +15,29 @@ function isAuthenticated(req: Request, res: Response, next: Function) {
 // Helper function to fetch summary from Jina AI
 async function fetchSummary(url: string): Promise<string> {
   try {
+    // Make sure the URL includes the protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    
+    // Use a different approach for Jina AI
     const encodedUrl = encodeURIComponent(url);
-    const response = await fetch(`https://r.jina.ai/http://${encodedUrl}`);
+    
+    // Try the proper format for Jina AI - remove http:// prefix in the encoded URL
+    const apiUrl = `https://api.jina.ai/v1/summarize?url=${encodedUrl}`;
+    
+    const response = await fetch(apiUrl);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch summary: ${response.statusText}`);
     }
     
-    return await response.text();
+    const result = await response.json() as { summary?: string };
+    return result.summary || "No summary available.";
   } catch (error) {
     console.error("Error fetching summary:", error);
-    return "Summary temporarily unavailable.";
+    // Return a placeholder summary
+    return "Summary could not be generated. This might be due to API limits or the content format.";
   }
 }
 

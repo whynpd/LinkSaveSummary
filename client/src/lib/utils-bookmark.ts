@@ -1,17 +1,25 @@
 // Function to fetch summary using Jina AI
 export async function fetchJinaSummary(url: string): Promise<string> {
   try {
+    // Make sure the URL includes the protocol
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    
     const encodedUrl = encodeURIComponent(url);
-    const response = await fetch(`https://r.jina.ai/http://${encodedUrl}`);
+    const apiUrl = `https://api.jina.ai/v1/summarize?url=${encodedUrl}`;
+    
+    const response = await fetch(apiUrl);
     
     if (!response.ok) {
       throw new Error(`Failed to fetch summary: ${response.statusText}`);
     }
     
-    return await response.text();
+    const result = await response.json();
+    return result.summary || "No summary available.";
   } catch (error) {
     console.error("Error fetching summary:", error);
-    return "Summary temporarily unavailable.";
+    return "Summary could not be generated. This might be due to API limits or the content format.";
   }
 }
 
